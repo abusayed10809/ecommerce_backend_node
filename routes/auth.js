@@ -47,8 +47,9 @@ router.post("/login", async (req, res) => {
       res.status(401).json("Wrong credentials!");
 
     // create an access token when
-    // user is found
-    // passwords is correct
+    // 1. user is found
+    // 2. passwords is correct
+    // the jwt payload includes the user's id and isAdmin status
     const accessToken = jwt.sign(
       {
         id: user._id,
