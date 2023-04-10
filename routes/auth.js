@@ -25,11 +25,15 @@ router.post("/register", async (req, res) => {
   }
 });
 
-// login -----------------------------------------------------------
+///
+/// login -----------------------------------------------------------
 router.post("/login", async (req, res) => {
   try {
+    // find the user
     const user = await User.findOne({ userName: req.body.userName });
     !user && res.status(401).json("Wrong credentials!");
+
+    // decrypt user objects password using secret key
     console.log("user is: " + user);
     const hashedPassword = cryptojs.AES.decrypt(
       user.password,
@@ -37,9 +41,14 @@ router.post("/login", async (req, res) => {
     );
     const passwordString = hashedPassword.toString(cryptojs.enc.Utf8);
     console.log("password is: " + passwordString);
+
+    // check if user object password match with form submitted password
     passwordString != req.body.password &&
       res.status(401).json("Wrong credentials!");
 
+    // create an access token when
+    // user is found
+    // passwords is correct
     const accessToken = jwt.sign(
       {
         id: user._id,
@@ -48,8 +57,6 @@ router.post("/login", async (req, res) => {
       process.env.JWT_SECRET_KEY,
       { expiresIn: "3d" }
     );
-
-    // this is just a comment to test git bash
 
     const { password, ...otherData } = user._doc;
 
