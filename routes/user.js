@@ -28,9 +28,9 @@ router.put("/:id", verifyTokenAndAuthorization, async (req, res) => {
       },
       { new: true }
     );
-    res.status(200).json(updatedUser);
+    return res.status(200).json(updatedUser);
   } catch (error) {
-    res.status(500).json(error);
+    return res.status(500).json(error);
   }
 });
 
@@ -38,9 +38,9 @@ router.put("/:id", verifyTokenAndAuthorization, async (req, res) => {
 router.delete("/:id", verifyTokenAndAuthorization, async (req, res) => {
   try {
     await User.findByIdAndDelete(req.params.id);
-    res.status(200).json("User deleted successfully.");
+    return res.status(200).json("User deleted successfully.");
   } catch (error) {
-    res.status(500).json(error);
+    return res.status(500).json(error);
   }
 });
 
@@ -49,9 +49,9 @@ router.get("/find/:id", verifyTokenAndAdmin, async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
     const { password, ...otherData } = user._doc;
-    res.status(200).json(otherData);
+    return res.status(200).json(otherData);
   } catch (error) {
-    res.status(500).json(error);
+    return res.status(500).json(error);
   }
 });
 
@@ -62,9 +62,9 @@ router.get("/", verifyTokenAndAdmin, async (req, res) => {
     const users = query
       ? await User.find().sort({ _id: -1 }).limit(5)
       : await User.find();
-    res.status(200).json(users);
+    return res.status(200).json(users);
   } catch (error) {
-    res.status(500).json(error);
+    return res.status(500).json(error);
   }
 });
 
@@ -73,7 +73,10 @@ router.get("/stats", verifyTokenAndAdmin, async (req, res) => {
   const date = new Date();
   const lastYear = new Date(date.setFullYear(date.getFullYear() - 1));
   try {
+    // aggregates list of users
+    // all users created before last year
     const data = await User.aggregate([
+      // filtering created at field
       {
         $match: {
           createdAt: {
@@ -81,6 +84,8 @@ router.get("/stats", verifyTokenAndAdmin, async (req, res) => {
           },
         },
       },
+      // creating new field name month
+      // month field has $month extracted from created at field
       {
         $project: {
           month: {
@@ -88,6 +93,8 @@ router.get("/stats", verifyTokenAndAdmin, async (req, res) => {
           },
         },
       },
+      // fetching every distinct month
+      // counting total number of instances of that month in the db
       {
         $group: {
           _id: "$month",
@@ -97,9 +104,9 @@ router.get("/stats", verifyTokenAndAdmin, async (req, res) => {
         },
       },
     ]);
-    res.status(200).json(data);
+    return res.status(200).json(data);
   } catch (error) {
-    res.status(500).json(error);
+    return res.status(500).json(error);
   }
 });
 

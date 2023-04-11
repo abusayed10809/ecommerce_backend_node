@@ -18,10 +18,10 @@ router.post("/register", async (req, res) => {
 
   try {
     const savedUser = await newUser.save();
-    res.status(201).json(savedUser);
+    return res.status(201).json(savedUser);
   } catch (error) {
     console.log(error);
-    res.status(500).json(error);
+    return res.status(500).json(error);
   }
 });
 
@@ -30,8 +30,16 @@ router.post("/register", async (req, res) => {
 router.post("/login", async (req, res) => {
   try {
     // find the user
+    if (
+      !req.body.hasOwnProperty("userName") ||
+      !req.body.hasOwnProperty("password")
+    ) {
+      return res.status(404).json("incorrect json fields");
+    }
     const user = await User.findOne({ userName: req.body.userName });
-    !user && res.status(401).json("Wrong credentials!");
+    if (!user) {
+      return res.status(401).json("Wrong credentials!");
+    }
 
     // decrypt user objects password using secret key
     console.log("user is: " + user);
@@ -43,8 +51,9 @@ router.post("/login", async (req, res) => {
     console.log("password is: " + passwordString);
 
     // check if user object password match with form submitted password
-    passwordString != req.body.password &&
-      res.status(401).json("Wrong credentials!");
+    if (passwordString != req.body.password) {
+      return res.status(401).json("Wrong credentials!");
+    }
 
     // create an access token when
     // 1. user is found
@@ -61,10 +70,10 @@ router.post("/login", async (req, res) => {
 
     const { password, ...otherData } = user._doc;
 
-    res.status(200).json({ ...otherData, accessToken });
     console.log("success");
+    return res.status(200).json({ ...otherData, accessToken });
   } catch (error) {
-    res.status(500).json(error);
+    return res.status(500).json(error);
   }
 });
 
