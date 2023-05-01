@@ -86,6 +86,7 @@ GET MONTHLY INCOME ----------------------------------------------------------
 */
 router.get("/income", verifyTokenAndAdmin, async (req, res) => {
   try {
+    const productId = req.query.pid;
     const date = new Date();
     const lastMonth = new Date(date.setMonth(date.getMonth() - 1));
     const previousMonth = new Date(
@@ -96,9 +97,10 @@ router.get("/income", verifyTokenAndAdmin, async (req, res) => {
       // date greater than current month - 2 months
       {
         $match: {
-          createdAt: {
-            $gte: previousMonth,
-          },
+          createdAt: { $gte: previousMonth },
+          ...(productId && {
+            products: { $elemMatch: { productId } },
+          }),
         },
       },
       // create two new variables

@@ -6,6 +6,7 @@ verify json webtoken
 const verifyToken = (req, res, next) => {
   const authHeader = req.headers.authorization;
   const token = authHeader.split(" ")[1];
+  console.log("token is ->>> " + token);
   // if header is available
   if (authHeader) {
     // verify token with secret key
